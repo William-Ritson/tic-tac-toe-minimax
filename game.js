@@ -5,7 +5,7 @@ var rl = readline.createInterface({
     output: process.stdout
 });
 
-var ai = require('./ai.js');
+var Ai = require('./ai.js');
 
 var game = {};
 
@@ -17,7 +17,7 @@ game.board = [
 
 game.printBoard = function () {
     var i, j,
-        symbols = ['O', '_', 'X'],
+        symbols = ['X', '_', 'O'],
         out = '';
 
     for (i = 0; i < this.board.length; i += 1) {
@@ -48,7 +48,7 @@ game.playerTurn = function () {
         var madeMove = false;
         try {
             var cordinate = cordinateString.split(/\s/);
-            game.makeMove(1, parseInt(cordinate[1] - 1), parseInt(cordinate[0] - 1));
+            game.makeMove(-1, parseInt(cordinate[1] - 1), parseInt(cordinate[0] - 1));
             madeMove = true;
         } catch (e) {
             console.log('invalid move', e);
@@ -62,17 +62,6 @@ game.playerTurn = function () {
             game.playerTurn();
         }
     });
-};
-
-game.aiTurn = function () {
-    var turnMade = false;
-    move = ai.selectMove(this.board);
-
-    game.makeMove(-1, move[0], move[1]);
-
-    if (!game.isOver()) {
-        game.playerTurn();
-    }
 };
 
 var evaluateState = function (board) {
@@ -109,18 +98,53 @@ var evaluateState = function (board) {
     return 0;
 };
 
+var getAvalibleMoves = function (board) {
+    var moves = [],
+        i, j;
+
+    for (i = 0; i < 3; i += 1) {
+        for (j = 0; j < 3; j += 1) {
+            if (board[i][j] === 0) {
+                moves.push([j, i]);
+            }
+        }
+    }
+
+    return moves;
+};
+
+var ai = new Ai(evaluateState, getAvalibleMoves, function (move, state, turn) {
+    state[move[1]][move[0]] = turn;
+});
+
+game.aiTurn = function () {
+    var turnMade = false;
+    move = ai.selectMove(this.board);
+
+    game.makeMove(1, move[1], move[0]);
+
+    if (!game.isOver()) {
+        game.playerTurn();
+    }
+};
+
+
+
 game.isOver = function () {
     var res = evaluateState(this.board);
-    game.printBoard();
+
+    if (res === undefined) {
+        return false;
+    }
+
     if (res === 0) {
         console.log('Draw');
     } else if (res === 1) {
-        console.log('Player Win');
-    } else if (res === -1) {
         console.log('A.I Win');
-    } else {
-        return false;
+    } else if (res === -1) {
+        console.log('Player Win');
     }
+
     game.end();
     return true;
 };
