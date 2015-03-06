@@ -26,7 +26,7 @@ game.printBoard = function () {
         }
         out += '\n';
     }
-    console.log('\033[2J');
+    //console.log('\033[2J');
     console.log(out);
 };
 
@@ -79,7 +79,8 @@ var evaluateState = function (board) {
         board[2][0] + board[1][1] + board[0][2]
     ];
 
-    for (var i = 0; i < lines.length; i += 1) {
+    var i, j;
+    for (i = 0; i < lines.length; i += 1) {
         if (lines[i] === 3) {
             return 1;
         } else if (lines[i] === -3) {
@@ -118,8 +119,8 @@ var ai = new Ai(evaluateState, getAvalibleMoves, function (move, state, turn) {
 });
 
 game.aiTurn = function () {
-    var turnMade = false;
-    move = ai.selectMove(this.board);
+    var turnMade = false,
+        move = ai.selectMove(this.board);
 
     game.makeMove(1, move[1], move[0]);
 
